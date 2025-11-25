@@ -23,10 +23,9 @@ import OrderSequenceMode from './pages/gamemodes/OrderSequenceMode.jsx';
 import AddOrderPhrase from './pages/admin/games/AddOrderPhrase.jsx';
 import EditKeywords from './pages/admin/games/EditKeywords.jsx';
 
-
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <BrowserRouter>
+    <BrowserRouter basename="/Project-WordQuest">
       <Routes>
         <Route path="/" element={<App />} />
         <Route path="/register" element={<Register />} />
