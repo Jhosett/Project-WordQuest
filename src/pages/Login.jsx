@@ -1,7 +1,7 @@
 // src/pages/Login.jsx
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { FaEnvelope, FaLock, FaEye, FaEyeSlash, FaSignInAlt } from "react-icons/fa";
 import { loginUser } from "../services/authService";
 import Swal from "sweetalert2";
@@ -162,9 +162,9 @@ export default function Login() {
           <div className="text-center mt-8">
             <p className="text-white/60 text-sm">
               ¿No tienes cuenta?{" "}
-              <a href="/register" className="text-blue-400 hover:text-blue-300 font-medium transition-colors">
+              <Link to="/register" className="text-blue-400 hover:text-blue-300 font-medium transition-colors">
                 Regístrate aquí
-              </a>
+              </Link>
             </p>
           </div>
         </div>

@@ -1,10 +1,14 @@
 // src/pages/Register.jsx
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { FaUser, FaEnvelope, FaLock, FaEye, FaEyeSlash, FaRocket, FaCheck, FaStar } from "react-icons/fa";
 import { registerUser } from "../services/authService";
 import Swal from "sweetalert2";
+
+const PASSWORD_PATTERN = /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/;
+const MIN_AGE = 13;
+const MAX_AGE = 120;
 
 export default function Register() {
   const navigate = useNavigate();
@@ -42,7 +46,7 @@ export default function Register() {
                /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(form.name || '') &&
                /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email || '') &&
                (form.password?.length || 0) >= 8 &&
-               /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(form.password || '') &&
+               PASSWORD_PATTERN.test(form.password || '') &&
                form.password === form.confirmPassword;
       }
       
@@ -50,8 +54,11 @@ export default function Register() {
         if (!form.birthdate) return false;
         const birthDate = new Date(form.birthdate);
         const today = new Date();
-        const age = today.getFullYear() - birthDate.getFullYear();
-        return age >= 13 && age <= 120 &&
+        let age = today.getFullYear() - birthDate.getFullYear();
+        if (today.getMonth() < birthDate.getMonth() || (today.getMonth() === birthDate.getMonth() && today.getDate() < birthDate.getDate())) {
+          age--;
+        }
+        return age >= MIN_AGE && age <= MAX_AGE &&
                (form.country?.trim().length || 0) > 0 &&
                /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(form.country || '') &&
                (form.city?.trim().length || 0) > 0 &&
@@ -90,7 +97,7 @@ export default function Register() {
         newErrors.password = "La contraseña es requerida";
       } else if (form.password.length < 8) {
         newErrors.password = "La contraseña debe tener al menos 8 caracteres";
-      } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(form.password)) {
+      } else if (!PASSWORD_PATTERN.test(form.password)) {
         newErrors.password = "Debe contener mayúscula, minúscula y número";
       }
       
@@ -110,9 +117,9 @@ export default function Register() {
         const birthDate = new Date(form.birthdate);
         const today = new Date();
         const age = today.getFullYear() - birthDate.getFullYear();
-        if (age < 13) {
-          newErrors.birthdate = "Debes tener al menos 13 años";
-        } else if (age > 120) {
+        if (age < MIN_AGE) {
+          newErrors.birthdate = `Debes tener al menos ${MIN_AGE} años`;
+        } else if (age > MAX_AGE) {
           newErrors.birthdate = "Ingresa una fecha válida";
         }
       }
@@ -155,22 +162,31 @@ export default function Register() {
     }
     
     setLoading(true);
-    const result = await registerUser(form);
-    
-    if (result.success) {
-      Swal.fire({
-        icon: 'success',
-        title: '¡Cuenta creada exitosamente!',
-        text: 'Bienvenido a WordQuest',
-        confirmButtonColor: '#8B5CF6'
-      }).then(() => {
-        navigate('/login');
-      });
-    } else {
+    try {
+      const result = await registerUser(form);
+      
+      if (result.success) {
+        Swal.fire({
+          icon: 'success',
+          title: '¡Cuenta creada exitosamente!',
+          text: 'Bienvenido a WordQuest',
+          confirmButtonColor: '#8B5CF6'
+        }).then(() => {
+          navigate('/login');
+        });
+      } else {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error al crear cuenta',
+          text: result.error,
+          confirmButtonColor: '#8B5CF6'
+        });
+      }
+    } catch (error) {
       Swal.fire({
         icon: 'error',
-        title: 'Error al crear cuenta',
-        text: result.error,
+        title: 'Error de conexión',
+        text: 'No se pudo conectar con el servidor',
         confirmButtonColor: '#8B5CF6'
       });
     }
@@ -365,7 +381,7 @@ export default function Register() {
             {step === 1 && (
               <div className="space-y-6">
                 <div className="space-y-1">
-                  <label className="text-white/80 text-sm font-medium">Fecha de nacimiento</label>
+                  <label className="text-white/80 text-sm font-medium" aria-label="Fecha de nacimiento">Fecha de nacimiento</label>
                   <input
                     type="date"
                     value={form.birthdate}
@@ -379,7 +395,7 @@ export default function Register() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1">
-                    <label className="text-white/80 text-sm font-medium">País</label>
+                    <label className="text-white/80 text-sm font-medium" aria-label="País">País</label>
                     <input
                       type="text"
                       value={form.country}
@@ -467,6 +483,7 @@ export default function Register() {
                   whileTap={{ scale: 0.95 }}
                   onClick={back}
                   className="w-full sm:w-auto px-6 py-3 bg-white/10 hover:bg-white/20 text-white rounded-xl font-medium transition-all duration-200 border border-white/10"
+                  aria-label="Atrás"
                 >
                   ← Atrás
                 </motion.button>
@@ -479,6 +496,7 @@ export default function Register() {
                 whileTap={{ scale: 0.95 }}
                 onClick={next}
                 className="w-full sm:w-auto px-6 py-3 bg-linear-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-xl font-medium transition-all duration-200 shadow-lg"
+                aria-label="Siguiente"
               >
                 Siguiente →
               </motion.button>
@@ -489,9 +507,9 @@ export default function Register() {
           <div className="text-center mt-8">
             <p className="text-white/60 text-sm">
               ¿Ya tienes cuenta?{" "}
-              <a href="/login" className="text-purple-400 hover:text-purple-300 font-medium transition-colors">
+              <Link to="/login" className="text-purple-400 hover:text-purple-300 font-medium transition-colors" aria-label="Inicia sesión">
                 Inicia sesión
-              </a>
+              </Link>
             </p>
           </div>
         </div>

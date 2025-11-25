@@ -179,7 +179,7 @@ export default function ChapterMissions() {
                     transition={{ delay: index * 0.1, type: "spring", stiffness: 100 }}
                     className="relative group"
                   >
-                    <div className={`relative bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl border-2 rounded-2xl overflow-hidden transition-all duration-500 ${
+                    <div className={`relative bg-linear-to-br from-white/10 to-white/5 backdrop-blur-xl border-2 rounded-2xl overflow-hidden transition-all duration-500 ${
                       isCompleted && completionScore >= 70
                         ? 'border-green-400/50 shadow-lg shadow-green-500/20'
                         : isCompleted && completionScore < 70
@@ -194,23 +194,34 @@ export default function ChapterMissions() {
                       <div className="absolute -top-3 -left-3 z-10">
                         <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-white shadow-lg ${
                           isCompleted && completionScore >= 70
-                            ? 'bg-gradient-to-r from-green-500 to-emerald-600'
+                            ? 'bg-linear-to-r from-green-500 to-emerald-600'
                             : isCompleted && completionScore < 70
-                            ? 'bg-gradient-to-r from-yellow-500 to-amber-600'
+                            ? 'bg-linear-to-r from-yellow-500 to-amber-600'
                             : isUnlocked
-                            ? 'bg-gradient-to-r from-blue-500 to-indigo-600'
-                            : 'bg-gradient-to-r from-gray-500 to-gray-600'
+                            ? 'bg-linear-to-r from-blue-500 to-indigo-600'
+                            : 'bg-linear-to-r from-gray-500 to-gray-600'
                         }`}>
                           {isCompleted && completionScore >= 70 ? '✓' : mission.order}
                         </div>
                       </div>
+
+                      {/* Completion Message Overlay */}
+                      {isCompleted && (
+                        <div className="absolute top-4 right-4 z-20">
+                          <div className={`px-3 py-1 rounded-full text-xs font-bold text-white shadow-lg ${
+                            completionScore >= 70 ? 'bg-green-500' : 'bg-yellow-500'
+                          }`}>
+                            {completionScore >= 70 ? '¡Completado!' : 'Completado'}
+                          </div>
+                        </div>
+                      )}
 
                       <div className="p-6">
                         {/* Mission Icon & Title */}
                         <div className="flex items-center gap-4 mb-4">
                           <div className={`w-14 h-14 rounded-xl flex items-center justify-center ${
                             isUnlocked 
-                              ? 'bg-gradient-to-r from-purple-500 to-pink-500' 
+                              ? 'bg-linear-to-r from-purple-500 to-pink-500' 
                               : 'bg-gray-600'
                           }`}>
                             {isUnlocked ? (
@@ -272,9 +283,9 @@ export default function ChapterMissions() {
                           disabled={!isUnlocked}
                           className={`w-full py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 text-sm ${
                             isCompleted
-                              ? 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white'
+                              ? 'bg-linear-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white'
                               : isUnlocked
-                              ? 'bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white'
+                              ? 'bg-linear-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white'
                               : 'bg-gray-600/50 text-gray-400 cursor-not-allowed'
                           }`}
                         >
@@ -308,7 +319,7 @@ export default function ChapterMissions() {
               transition={{ delay: missions.length * 0.1 + 0.3 }}
               className="flex justify-center mt-8"
             >
-              <div className="bg-gradient-to-r from-green-500 to-teal-500 px-6 py-3 rounded-2xl flex items-center gap-3 shadow-xl">
+              <div className="bg-linear-to-r from-green-500 to-teal-500 px-6 py-3 rounded-2xl flex items-center gap-3 shadow-xl">
                 <FaCheck className="text-white text-xl" />
                 <span className="text-white font-bold text-lg">Capítulo Completo</span>
               </div>

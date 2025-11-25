@@ -137,7 +137,7 @@ export default function ChapterSelection() {
                 >
                   {/* Chapter Number */}
                   <div className="flex items-center justify-between mb-4">
-                    <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
+                    <div className="w-12 h-12 bg-linear-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
                       <span className="text-white font-bold text-lg">{chapter.order}</span>
                     </div>
                     <div className="text-purple-400 group-hover:text-purple-300 transition-colors">
@@ -162,7 +162,7 @@ export default function ChapterSelection() {
                       <div className="w-2 h-2 bg-green-400 rounded-full"></div>
                       <span className="text-green-300 text-xs">Disponible</span>
                     </div>
-                    <button className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2">
+                    <button className="bg-linear-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2">
                       <FaPlay size={12} /> Jugar
                     </button>
                   </div>
