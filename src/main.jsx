@@ -22,6 +22,8 @@ import CompletePhraseMode from './pages/gamemodes/CompletePhraseMode.jsx';
 import OrderSequenceMode from './pages/gamemodes/OrderSequenceMode.jsx';
 import AddOrderPhrase from './pages/admin/games/AddOrderPhrase.jsx';
 import EditKeywords from './pages/admin/games/EditKeywords.jsx';
+import UsersAdmin from './pages/admin/users/UsersAdmin.jsx';
+import UserDetail from './pages/admin/users/UserDetail.jsx';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -43,6 +45,8 @@ createRoot(document.getElementById('root')).render(
         <Route path="/admin/games/add-sentence" element={<AddSentence />} />
         <Route path="/admin/games/add-sequence" element={<AddOrderPhrase />} />
         <Route path="/admin/games/edit-keywords" element={<EditKeywords />} />
+        <Route path="/admin/users" element={<UsersAdmin />} />
+        <Route path="/admin/users/:userId" element={<UserDetail />} />
         <Route path="/chapter-selection" element={<ChapterSelection />} />
         <Route path="/chapter-missions" element={<ChapterMissions />} />
         <Route path="/keywords-mode" element={<KeyWordsMode />} />
