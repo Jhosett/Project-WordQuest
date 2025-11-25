@@ -1,0 +1,53 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Users can read and write their own user document
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      
+      // Progress subcollection - users can only access their own progress
+      match /progress/{bookId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+        
+        // Chapters progress subcollection
+        match /chapters/{chapterId} {
+          allow read, write: if request.auth != null && request.auth.uid == userId;
+          
+          // Missions progress subcollection
+          match /missions/{missionId} {
+            allow read, write: if request.auth != null && request.auth.uid == userId;
+          }
+        }
+      }
+      
+      // Achievements subcollection - users can only access their own achievements
+      match /achievements/{achievementId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+    
+    // Books collection - authenticated users can read, only admins can write
+    match /books/{bookId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && 
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+      
+      // Chapters subcollection - same permissions as books
+      match /chapters/{chapterId} {
+        allow read: if request.auth != null;
+        allow write: if request.auth != null && 
+          exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+        
+        // Missions subcollection under chapters
+        match /missions/{missionId} {
+          allow read: if request.auth != null;
+          allow write: if request.auth != null && 
+            exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+            get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+        }
+      }
+    }
+  }
+}
