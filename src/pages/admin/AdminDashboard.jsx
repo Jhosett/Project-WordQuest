@@ -123,34 +123,6 @@ export default function AdminDashboard() {
             );
           })}
         </div>
-
-        {/* Quick Stats */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6 }}
-          className="mt-12 bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-6"
-        >
-          <h3 className="text-xl font-bold text-white mb-4 text-center">Estado del Sistema</h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-green-400">Online</div>
-              <div className="text-white/60 text-sm">Sistema</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-blue-400">3</div>
-              <div className="text-white/60 text-sm">Libros</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-purple-400">150+</div>
-              <div className="text-white/60 text-sm">Usuarios</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-yellow-400">99.9%</div>
-              <div className="text-white/60 text-sm">Uptime</div>
-            </div>
-          </div>
-        </motion.div>
       </div>
     </div>
   );

@@ -124,7 +124,10 @@ export default function GamesAdmin() {
 
               {/* Actions */}
               <div className="space-y-2">
-                <button className="w-full bg-linear-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white py-2 px-4 rounded-xl text-sm font-medium transition-all flex items-center justify-center gap-2">
+                <button 
+                  onClick={() => navigate('/admin/games/edit-sentence')}
+                  className="w-full bg-linear-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white py-2 px-4 rounded-xl text-sm font-medium transition-all flex items-center justify-center gap-2"
+                >
                   <FaCog size={14} /> Editar Misiones
                 </button>
                 <button 

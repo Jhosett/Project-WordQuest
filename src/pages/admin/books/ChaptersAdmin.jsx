@@ -13,6 +13,7 @@ export default function ChaptersAdmin() {
   const [selectedBook, setSelectedBook] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [selectedChapter, setSelectedChapter] = useState(null);
   const [chapterForm, setChapterForm] = useState({
     title: "",
     content: "",
@@ -281,7 +282,8 @@ export default function ChaptersAdmin() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.1 }}
-                    className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-6 shadow-xl hover:shadow-2xl transition-all duration-300"
+                    onClick={() => setSelectedChapter(chapter)}
+                    className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-6 shadow-xl hover:shadow-2xl transition-all duration-300 cursor-pointer hover:bg-white/15"
                   >
                     <div className="flex items-center gap-3 mb-4">
                       <span className="bg-blue-500/20 text-blue-300 px-3 py-1 rounded-full text-sm font-medium">
@@ -308,6 +310,58 @@ export default function ChaptersAdmin() {
                 ))}
               </div>
             )}
+          </motion.div>
+        )}
+
+        {/* Chapter Detail Modal */}
+        {selectedChapter && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={() => setSelectedChapter(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-6 max-w-2xl w-full max-h-96 overflow-y-auto"
+            >
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-2xl font-bold text-white">Capítulo {selectedChapter.order}: {selectedChapter.title}</h3>
+                <button
+                  onClick={() => setSelectedChapter(null)}
+                  className="text-white/60 hover:text-white transition-colors"
+                >
+                  <FaTimes />
+                </button>
+              </div>
+
+              {selectedChapter.description && (
+                <div className="mb-4">
+                  <h4 className="text-white/80 font-medium mb-2">Descripción:</h4>
+                  <p className="text-white/70">{selectedChapter.description}</p>
+                </div>
+              )}
+
+              {selectedChapter.content && (
+                <div className="mb-4">
+                  <h4 className="text-white/80 font-medium mb-2">Contenido:</h4>
+                  <div className="bg-white/5 rounded-lg p-4 max-h-48 overflow-y-auto">
+                    <p className="text-white/80 whitespace-pre-line">{selectedChapter.content}</p>
+                  </div>
+                </div>
+              )}
+
+              <div className="text-xs text-white/40">
+                <p>Creado: {selectedChapter.createdAt?.toDate?.()?.toLocaleDateString() || 'N/A'}</p>
+                {selectedChapter.updatedAt && (
+                  <p>Actualizado: {selectedChapter.updatedAt?.toDate?.()?.toLocaleDateString()}</p>
+                )}
+              </div>
+            </motion.div>
           </motion.div>
         )}
       </div>

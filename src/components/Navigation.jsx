@@ -1,15 +1,34 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { FaHome, FaUser, FaSignOutAlt, FaChartPie } from 'react-icons/fa';
+import { FaHome, FaUser, FaSignOutAlt, FaChartPie, FaCog } from 'react-icons/fa';
 import { signOut } from 'firebase/auth';
-import { auth } from '../firebase/firebase';
+import { auth, db } from '../firebase/firebase';
 import { useAuthState } from 'react-firebase-hooks/auth';
+import { doc, getDoc } from 'firebase/firestore';
 
 export default function Navigation() {
   const [user] = useAuthState(auth);
   const location = useLocation();
   const navigate = useNavigate();
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    const checkAdminStatus = async () => {
+      if (user) {
+        try {
+          const userDoc = await getDoc(doc(db, "users", user.uid));
+          if (userDoc.exists()) {
+            setIsAdmin(userDoc.data().isAdmin || false);
+          }
+        } catch (error) {
+          console.error('Error checking admin status:', error);
+        }
+      }
+    };
+    
+    checkAdminStatus();
+  }, [user]);
 
   const handleLogout = async () => {
     try {
@@ -22,10 +41,17 @@ export default function Navigation() {
 
   if (!user) return null;
 
+  // Hide navigation during missions/game modes
+  const missionPaths = ['/keywords-mode', '/complete-phrase-mode', '/order-sequence-mode'];
+  const isInMission = missionPaths.some(path => location.pathname.includes(path));
+  
+  if (isInMission) return null;
+
   const navItems = [
     { path: '/', icon: FaHome, label: 'Inicio' },
     { path: '/dashboard', icon: FaChartPie, label: 'Dashboard' },
-    { path: '/user-profile', icon: FaUser, label: 'Perfil' }
+    { path: '/user-profile', icon: FaUser, label: 'Perfil' },
+    ...(isAdmin ? [{ path: '/admin', icon: FaCog, label: 'Admin' }] : [])
   ];
 
   return (
