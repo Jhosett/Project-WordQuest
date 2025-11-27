@@ -95,7 +95,7 @@ export default function KeyWordsMode() {
 
   if (!mission) {
     return (
-      <div className="min-h-screen bg-linear-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
         <div className="text-white text-xl">Misión no encontrada</div>
       </div>
     );
@@ -104,7 +104,7 @@ export default function KeyWordsMode() {
   const allWords = [...mission.data.correctWords, ...mission.data.distractors].sort(() => Math.random() - 0.5);
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-slate-900 via-purple-900 to-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
       <Navigation />
       
       <div className="absolute inset-0 opacity-10">
@@ -181,9 +181,19 @@ export default function KeyWordsMode() {
               transition={{ delay: 0.5 }}
               className="bg-linear-to-br from-white/10 to-white/5 rounded-2xl p-6 border border-white/10 shadow-inner"
             >
-              <p className="text-white/95 leading-relaxed text-lg font-medium tracking-wide">
+              {mission.data.imageUrl && (
+                <div className="mb-6">
+                  <img 
+                    src={mission.data.imageUrl} 
+                    alt="Imagen de la misión"
+                    className="w-full max-w-md mx-auto rounded-xl shadow-lg border border-white/20"
+                    onError={(e) => e.target.style.display = 'none'}
+                  />
+                </div>
+              )}
+              <div className="text-white/95 leading-relaxed text-lg font-medium tracking-wide whitespace-pre-line">
                 {mission.data.text}
-              </p>
+              </div>
             </motion.div>
           </div>
         </motion.div>
@@ -405,7 +415,11 @@ export default function KeyWordsMode() {
                     transition={{ delay: 0.9 }}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    onClick={() => window.location.reload()}
+                    onClick={() => {
+                      setSelectedWords([]);
+                      setShowResults(false);
+                      setProgressSaved(false);
+                    }}
                     className="bg-linear-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white px-8 py-4 rounded-2xl font-bold text-lg transition-all duration-300 shadow-2xl shadow-yellow-500/30"
                   >
                     Intentar de Nuevo

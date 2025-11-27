@@ -21,6 +21,7 @@ export default function AddKeyword() {
     difficulty: "Intermedio",
     order: "",
     text: "",
+    imageUrl: "",
     correctWords: [""],
     distractors: [""]
   });
@@ -122,6 +123,7 @@ export default function AddKeyword() {
         order: parseInt(missionForm.order),
         data: {
           text: missionForm.text,
+          imageUrl: missionForm.imageUrl || null,
           correctWords: filteredCorrectWords,
           distractors: filteredDistractors
         },
@@ -251,6 +253,18 @@ export default function AddKeyword() {
                 placeholder="Escribe el fragmento de texto aquí..."
                 rows={4}
                 className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all resize-none"
+              />
+            </div>
+
+            {/* Image URL */}
+            <div className="md:col-span-2">
+              <label className="block text-white/80 text-sm font-medium mb-2">URL de Imagen (opcional)</label>
+              <input
+                type="url"
+                value={missionForm.imageUrl}
+                onChange={(e) => handleInputChange('imageUrl', e.target.value)}
+                placeholder="https://ejemplo.com/imagen.jpg"
+                className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all"
               />
             </div>
 

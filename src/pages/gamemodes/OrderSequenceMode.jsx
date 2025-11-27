@@ -3,7 +3,7 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import { doc, getDoc } from "firebase/firestore";
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { motion, AnimatePresence } from "framer-motion";
-import { FaArrowLeft, FaSort, FaCheck, FaTimes, FaGripVertical } from "react-icons/fa";
+import { FaArrowLeft, FaSort, FaCheck, FaTimes, FaGripVertical, FaLightbulb, FaTimes as FaClose } from "react-icons/fa";
 import { db, auth } from "../../firebase/firebase";
 import { progressService } from "../../services/progressService";
 import Navigation from "../../components/Navigation";
@@ -19,6 +19,13 @@ export default function OrderSequenceMode() {
   const [showResult, setShowResult] = useState(false);
   const [score, setScore] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [showHintsPanel, setShowHintsPanel] = useState(false);
+  const [hintsRemaining, setHintsRemaining] = useState(3);
+  const [selectedStep, setSelectedStep] = useState(null);
+  const [hintsUsed, setHintsUsed] = useState(0);
+  const [hintsLog, setHintsLog] = useState([]);
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
   
   const bookId = searchParams.get('bookId');
   const chapterId = searchParams.get('chapterId');
@@ -39,6 +46,10 @@ export default function OrderSequenceMode() {
         // Shuffle the sequence for the user to order
         const shuffled = [...missionData.data.sequence].sort(() => Math.random() - 0.5);
         setUserSequence(shuffled);
+        // Set hints remaining from mission data
+        if (missionData.data.hints?.maxHints) {
+          setHintsRemaining(missionData.data.hints.maxHints);
+        }
       }
     } catch (error) {
       console.error('Error fetching mission:', error);
@@ -82,7 +93,10 @@ export default function OrderSequenceMode() {
       }
     }
     
-    const calculatedScore = Math.round((correctCount / correctOrder.length) * 100);
+    let calculatedScore = Math.round((correctCount / correctOrder.length) * 100);
+    // Apply hint penalty (10 points per hint used)
+    calculatedScore = Math.max(0, calculatedScore - (hintsUsed * 10));
+    
     setScore(calculatedScore);
     setIsCompleted(calculatedScore === 100);
     setShowResult(true);
@@ -98,7 +112,11 @@ export default function OrderSequenceMode() {
         chapterId,
         missionId,
         score,
-        { userSequence: userSequence.map(item => item.id) }
+        { 
+          userSequence: userSequence.map(item => item.id),
+          hintsUsed,
+          hintsLog
+        }
       );
       
       if (score >= 70) {
@@ -120,6 +138,48 @@ export default function OrderSequenceMode() {
     setShowResult(false);
     setIsCompleted(false);
     setScore(0);
+    setHintsUsed(0);
+    setHintsLog([]);
+    setHintsRemaining(mission.data.hints?.maxHints || 3);
+    setSelectedStep(null);
+  };
+
+  const useGeneralHint = () => {
+    if (hintsRemaining <= 0 || !mission.data.hints?.generalHints?.length) return;
+    
+    const availableHints = mission.data.hints.generalHints.filter(
+      hint => !hintsLog.some(log => log.hint === hint)
+    );
+    
+    if (availableHints.length === 0) return;
+    
+    const randomHint = availableHints[Math.floor(Math.random() * availableHints.length)];
+    
+    setHintsUsed(prev => prev + 1);
+    setHintsRemaining(prev => prev - 1);
+    setHintsLog(prev => [...prev, { type: 'general', hint: randomHint, timestamp: new Date() }]);
+    
+    showHintToast(randomHint);
+    setShowHintsPanel(false);
+  };
+
+  const useStepHint = (stepId) => {
+    if (hintsRemaining <= 0 || !mission.data.hints?.stepHints?.[stepId]) return;
+    
+    const hint = mission.data.hints.stepHints[stepId];
+    
+    setHintsUsed(prev => prev + 1);
+    setHintsRemaining(prev => prev - 1);
+    setHintsLog(prev => [...prev, { type: 'step', stepId, hint, timestamp: new Date() }]);
+    
+    showHintToast(hint);
+    setShowHintsPanel(false);
+  };
+
+  const showHintToast = (hint) => {
+    setToastMessage(hint);
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), 4000);
   };
 
   if (loading) {
@@ -143,14 +203,32 @@ export default function OrderSequenceMode() {
       <Navigation />
       
       <div className="relative max-w-4xl mx-auto px-4 py-8">
-        <motion.button
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          onClick={() => navigate(`/chapter-missions?bookId=${bookId}&chapterId=${chapterId}`)}
-          className="mb-6 flex items-center gap-2 text-white/70 hover:text-white transition-colors"
-        >
-          <FaArrowLeft /> Volver a Misiones
-        </motion.button>
+        <div className="flex justify-between items-center mb-6">
+          <motion.button
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            onClick={() => navigate(`/chapter-missions?bookId=${bookId}&chapterId=${chapterId}`)}
+            className="flex items-center gap-2 text-white/70 hover:text-white transition-colors"
+          >
+            <FaArrowLeft /> Volver a Misiones
+          </motion.button>
+          
+          {!showResult && (
+            <motion.button
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              onClick={() => setShowHintsPanel(true)}
+              disabled={hintsRemaining <= 0}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all ${
+                hintsRemaining > 0 
+                  ? 'bg-yellow-500/20 text-yellow-300 hover:bg-yellow-500/30 border border-yellow-500/30'
+                  : 'bg-gray-500/20 text-gray-400 cursor-not-allowed border border-gray-500/30'
+              }`}
+            >
+              <FaLightbulb /> {hintsRemaining > 0 ? `Pistas (${hintsRemaining})` : 'Sin pistas'}
+            </motion.button>
+          )}
+        </div>
 
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -189,7 +267,12 @@ export default function OrderSequenceMode() {
                       onDragStart={(e) => handleDragStart(e, step)}
                       onDragOver={handleDragOver}
                       onDrop={(e) => handleDrop(e, step)}
-                      className="bg-white/5 border border-white/20 rounded-xl p-4 cursor-move hover:bg-white/10 transition-all duration-200 flex items-center gap-4"
+                      onClick={() => setSelectedStep(selectedStep === step.id ? null : step.id)}
+                      className={`border rounded-xl p-4 cursor-move hover:bg-white/10 transition-all duration-200 flex items-center gap-4 ${
+                        selectedStep === step.id 
+                          ? 'bg-blue-500/20 border-blue-500/50' 
+                          : 'bg-white/5 border-white/20'
+                      }`}
                     >
                       <div className="text-green-400">
                         <FaGripVertical />
@@ -334,6 +417,92 @@ export default function OrderSequenceMode() {
           </div>
         </motion.div>
       </div>
+
+      {/* Hints Panel */}
+      <AnimatePresence>
+        {showHintsPanel && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={() => setShowHintsPanel(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-6 max-w-md w-full max-h-96 overflow-y-auto"
+            >
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-xl font-bold text-white">Pistas Disponibles</h3>
+                <button
+                  onClick={() => setShowHintsPanel(false)}
+                  className="text-white/60 hover:text-white transition-colors"
+                >
+                  <FaClose />
+                </button>
+              </div>
+
+              {/* General Hints */}
+              <div className="mb-6">
+                <h4 className="text-white/80 font-medium mb-3">Pistas Generales</h4>
+                <button
+                  onClick={useGeneralHint}
+                  disabled={hintsRemaining <= 0 || !mission.data.hints?.generalHints?.length}
+                  className="w-full bg-yellow-500/20 hover:bg-yellow-500/30 disabled:bg-gray-500/20 disabled:text-gray-400 text-yellow-300 py-3 px-4 rounded-xl transition-all border border-yellow-500/30 disabled:border-gray-500/30"
+                >
+                  Obtener pista general (-10 pts)
+                </button>
+              </div>
+
+              {/* Step Hints */}
+              <div>
+                <h4 className="text-white/80 font-medium mb-3">Pistas por Paso</h4>
+                {selectedStep ? (
+                  <div className="space-y-2">
+                    <p className="text-white/60 text-sm mb-2">
+                      Paso seleccionado: {userSequence.findIndex(s => s.id === selectedStep) + 1}
+                    </p>
+                    <button
+                      onClick={() => useStepHint(selectedStep)}
+                      disabled={hintsRemaining <= 0 || !mission.data.hints?.stepHints?.[selectedStep]}
+                      className="w-full bg-blue-500/20 hover:bg-blue-500/30 disabled:bg-gray-500/20 disabled:text-gray-400 text-blue-300 py-3 px-4 rounded-xl transition-all border border-blue-500/30 disabled:border-gray-500/30"
+                    >
+                      Obtener pista para este paso (-10 pts)
+                    </button>
+                  </div>
+                ) : (
+                  <p className="text-white/60 text-sm text-center py-4">
+                    Selecciona un paso de la secuencia para obtener una pista específica
+                  </p>
+                )}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Toast Notification */}
+      <AnimatePresence>
+        {showToast && (
+          <motion.div
+            initial={{ opacity: 0, y: -50, x: '-50%' }}
+            animate={{ opacity: 1, y: 0, x: '-50%' }}
+            exit={{ opacity: 0, y: -50, x: '-50%' }}
+            className="fixed top-4 left-1/2 transform bg-yellow-500/90 backdrop-blur-xl text-white px-6 py-4 rounded-xl shadow-2xl z-50 max-w-md"
+          >
+            <div className="flex items-start gap-3">
+              <FaLightbulb className="text-yellow-200 mt-1 flex-shrink-0" />
+              <div>
+                <p className="font-medium text-sm mb-1">Pista mostrada — -10 pts</p>
+                <p className="text-yellow-100 text-sm">{toastMessage}</p>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
